@@ -4,7 +4,8 @@
 
 ## 웹 크롤러 설정
 
-1. source 폴더에 json 파일 추가
+1. source 폴더 추가
+2. source 폴더에 json 파일 추가
 
    json 파일 예시
 
@@ -49,19 +50,19 @@
    }
    ```
 
-2. 패키지 설치
+3. 패키지 설치
 
    ```bash
    poetry install
    ```
 
-3. 가상화 환경 설정
+4. 가상화 설정
 
    ```bash
    poetry shell
    ```
 
-4. 웹 크롤러 실행
+5. 웹 크롤러 실행
 
    ```bash
    python run.py [id]
