@@ -3,7 +3,7 @@ from playwright.sync_api import sync_playwright
 
 from argv import ArgvData
 from source import SourceData
-from custom import view_custom, get_number_custom
+from custom import get_number_custom
 
 
 ARGV = None
@@ -32,6 +32,9 @@ def dc_crawl():
         browser = p.chromium.launch(**set_browser_option())  ## **은 언패킹 연산자 -> 딕셔너리를 키워드로 풀어서 전달함
         page = browser.new_page()
         
+        type = SOURCE._type
+        
+        
         # 페이지 로드
         page.goto(SOURCE._url)
         
@@ -54,8 +57,10 @@ def dc_crawl():
             except Exception as e:
                 print(f"Error getting href: {e}")
         
+        page.close()
+        
         if(len(crawl_url_list) > 0):
-            main_crawl(browser, crawl_url_list)
+            return main_crawl(browser, crawl_url_list)
         else:
             print("Error: No crawl url found")
             
@@ -65,12 +70,15 @@ def dc_crawl():
 def crawl_site_division():
     set_data()
     
-    print(f"Crawling URL : {SOURCE._url}")
+    print(f"Crawling {SOURCE._site} URL : {SOURCE._url}")
+    
+    crawl_data = []
     
     if(SOURCE._site == 'dc'):
         print_site(SOURCE._site)
-        dc_crawl()
-        
+        crawl_data = dc_crawl()
+       
+    return crawl_data
 def main_crawl(browser, crawl_url_list):
     print(f"Crawling URL : {crawl_url_list}")
     
@@ -81,7 +89,8 @@ def main_crawl(browser, crawl_url_list):
         page.goto(url)
         
         if(page.url == url):
-            print(f"Crawling URL : {url}")
+            
+            # 게시물 정보 가져오기
             subject_text = page.locator(SOURCE._subject['selector']).first.text_content()
             
             # script 태그 제거 후 콘텐츠 가져오기
@@ -111,10 +120,11 @@ def main_crawl(browser, crawl_url_list):
                 'url': url
             })
             
-            break
         else:
             print(f"Error: {page.url} is not {url}")
+        
+        page.close()
             
-    print(crawl_data)
+    return crawl_data
    
     

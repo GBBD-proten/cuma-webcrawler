@@ -50,6 +50,7 @@ class SourceData:
                 self._category_name = data['category_name']
                 self._contents = data['contents']
                 self._host = data['host']
+                self._type = data['link']['type']
                 self._url = data['link']['url']
                 self._parameter = data['link']['parameter']
                 self._max_parameter = data['link']['max_parameter']
