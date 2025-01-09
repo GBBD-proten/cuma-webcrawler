@@ -32,10 +32,10 @@ class SourceData:
         self._view = None
         self._like = None
         
-        self._load_data()
+        self.load_source()
     
-    def _load_data(self):
-        source_dir = 'source'
+    def load_source(self):
+        source_dir = 'config/source'
         json_file = f"{self._id}.json"
         file_path = os.path.join(source_dir, json_file)
         
@@ -61,6 +61,6 @@ class SourceData:
                 self._view = data['info']['view']
                 self._like = data['info']['like']
             else:
-                print({"error": f"ID {self._id} is not exist json file."})
+                print({"error": f"ID [{self._id}] is not exist source file."})
         except Exception as e:
-            print({"error": f"json file read error: {str(e)}"})
+            print({"error": f"source file read error: ID [{self._id}] {str(e)}"})

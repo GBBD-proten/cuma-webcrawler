@@ -2,9 +2,13 @@ import json
 import os
 from datetime import datetime
 
-def save_data_to_json(data, id):
+from configData import get_source
+
+def save_data_to_json(data):
+    source = get_source()
+    
     # 폴더 경로 생성
-    folder_path = os.path.join('json', str(id))
+    folder_path = os.path.join('json', str(source._id))
     
     # 폴더가 없으면 생성
     os.makedirs(folder_path, exist_ok=True)
@@ -17,5 +21,5 @@ def save_data_to_json(data, id):
     with open(file_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False)
         
-    print(f"Data saved to {file_path}")
+    print(f"Data saved to : {file_path}")
         

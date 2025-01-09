@@ -1,19 +1,12 @@
 import sys
 from playwright.sync_api import sync_playwright
 
-from argv import ArgvData
-from source import SourceData
+from configData import get_argv, get_source
 from custom import get_number_custom
 
 
 ARGV = None
 SOURCE = None
-
-def set_data():
-    global ARGV, SOURCE
-    
-    ARGV = ArgvData.get_instance()
-    SOURCE = SourceData(ARGV._id)
     
 def print_site(site):
     print(f"Crawling Site : {site}")
@@ -68,7 +61,10 @@ def dc_crawl():
 
 # 사이트 구분
 def crawl_site_division():
-    set_data()
+    global ARGV, SOURCE
+    
+    ARGV = get_argv()
+    SOURCE = get_source()
     
     print(f"Crawling {SOURCE._site} URL : {SOURCE._url}")
     
@@ -79,8 +75,11 @@ def crawl_site_division():
         crawl_data = dc_crawl()
        
     return crawl_data
+
+
 def main_crawl(browser, crawl_url_list):
     print(f"Crawling URL : {crawl_url_list}")
+    print(f"Crawling URL Count : {len(crawl_url_list)}")
     
     crawl_data = []
 
@@ -119,7 +118,7 @@ def main_crawl(browser, crawl_url_list):
                 'like': like_text,
                 'url': url
             })
-            
+            break
         else:
             print(f"Error: {page.url} is not {url}")
         
