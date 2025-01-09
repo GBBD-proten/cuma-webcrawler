@@ -17,16 +17,20 @@ class SourceData:
         self._id = id
         self._index = None
         self._site = None
-        self._site_name = None
         self._site_type = None
         self._category = None
         self._category_name = None
         self._contents = None
+        self._host = None
         self._url = None
         self._parameter = None
         self._max_parameter = None
         self._min_parameter = None
-        self._info = None
+        self._subject = None
+        self._content = None
+        self._date = None
+        self._view = None
+        self._like = None
         
         self._load_data()
     
@@ -41,16 +45,20 @@ class SourceData:
                     data = json.load(f)
                 self._index = data['index']
                 self._site = data['site']
-                self._site_name = data['site_name']
                 self._site_type = data['site_type']
                 self._category = data['category']
                 self._category_name = data['category_name']
                 self._contents = data['contents']
+                self._host = data['host']
                 self._url = data['link']['url']
                 self._parameter = data['link']['parameter']
                 self._max_parameter = data['link']['max_parameter']
                 self._min_parameter = data['link']['min_parameter']
-                self._info = data['info']
+                self._subject = data['info']['subject']
+                self._content = data['info']['content']
+                self._date = data['info']['date']
+                self._view = data['info']['view']
+                self._like = data['info']['like']
             else:
                 print({"error": f"ID {self._id} is not exist json file."})
         except Exception as e:

@@ -1,6 +1,7 @@
 import sys
+
 from argv import ArgvData
-from crawler import main_crawl
+from crawler import crawl_site_division
 
 def main():
     if len(sys.argv) <= 1:
@@ -11,7 +12,7 @@ def main():
     argv_data = ArgvData.get_instance(sys.argv)
      
             
-    main_crawl()
+    crawl_site_division()
         
 if __name__ == "__main__":
     main()
