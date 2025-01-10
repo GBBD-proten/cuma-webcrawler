@@ -124,6 +124,7 @@ class Crawler:
                 
                 if self.ARGV._test:
                     break
+                
             else:
                 print(f"Error: {page.url} is not {url}")
             
