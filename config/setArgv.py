@@ -16,7 +16,9 @@ class ArgvData:
         self._mode = None
         self._json = False
         self._bulk = False
-        
+        self._debug = False
+        self._test = False
+
         self.load_argv()
         
     def load_argv(self):
@@ -30,6 +32,9 @@ class ArgvData:
             print(f"SELECTED OPTION: {self.argv[3]}")
             if self.argv[3] == "-json":
                 self._json = True
-            elif self.argv[3] == "-bulk":
-                self._bulk = True
 
+        if '-debug' in self.argv:
+            self._debug = True
+            
+        if '-test' in self.argv:
+            self._test = True
