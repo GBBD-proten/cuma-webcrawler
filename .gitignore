@@ -1,6 +1,12 @@
 # source 폴더
 source/
 
+# json 폴더
+json/
+
+# index 폴더
+index/
+
 # poetry.lock
 poetry.lock
 
