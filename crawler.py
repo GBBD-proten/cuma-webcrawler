@@ -19,13 +19,9 @@ class Crawler:
         # 브라우저 인스턴스 생성
         self.browser = self.playwright.chromium.launch(**self.setBrowserOption())
         
-        try:
-            crawl_data = self.siteDivision()
-        finally:
-            self.playwright.stop()
-            self.browser.close()
-        
-        return crawl_data
+
+        self.crawl_data = self.siteDivision()
+
     
     def __del__(self):
         # 객체가 삭제될 때 정리
@@ -108,8 +104,10 @@ class Crawler:
                         
                 elif(parameter_type == 'result'):
                     crawl_url_list.append(main_url)
+                 
+                if self.ARGV._test:
+                    break
                   
-                break;  
                 print(f"Link URL List : {link_url_list}")
                 
             print(f"Crawl URL List : {crawl_url_list}")
@@ -186,8 +184,10 @@ class Crawler:
                 
             else:
                 print(f"Error: {page.url} is not {url}")
-            
                 
         return crawl_data
+    
+    def getCrawlData(self):
+        return self.crawl_data
     
         

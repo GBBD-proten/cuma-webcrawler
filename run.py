@@ -12,7 +12,8 @@ def modeDivision():
     argv = get_argv()
     
     if argv._mode == "cra":
-        crawl_data = Crawler()
+        crawler = Crawler()
+        crawl_data = crawler.getCrawlData()
         crawl_data_count = len(crawl_data)
         
         print(f"Crawl Data Count : {crawl_data_count}")
