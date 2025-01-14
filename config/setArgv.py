@@ -2,7 +2,7 @@ class ArgvData:
     _instance = None
     
     @classmethod
-    def get_instance(cls, argv=None):
+    def getInstance(cls, argv=None):
         if cls._instance is None:
             cls._instance = cls(argv)
         return cls._instance
@@ -19,9 +19,9 @@ class ArgvData:
         self._debug = False
         self._test = False
 
-        self.load_argv()
+        self.loadArgv()
         
-    def load_argv(self):
+    def loadArgv(self):
         print(f"SELECTED ID: {self.argv[1]}")
         self._id = self.argv[1]
         

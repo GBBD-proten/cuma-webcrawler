@@ -5,7 +5,7 @@ class SearchData:
     _instance = None
     
     @classmethod
-    def get_instance(cls):
+    def getInstance(cls):
         if cls._instance is None:
             cls._instance = cls()
         return cls._instance
@@ -13,9 +13,9 @@ class SearchData:
     def __init__(self):
         self._elasticsearch_url = None
         
-        self.load_config()
+        self.loadConfig()
         
-    def load_config(self):
+    def loadConfig(self):
         config_dir = 'config'
         json_file = 'search.json'
         file_path = os.path.join(config_dir, json_file)
