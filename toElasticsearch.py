@@ -2,7 +2,7 @@ import json
 import os
 from elasticsearch import Elasticsearch
 
-from configData import get_argv, get_source, get_search
+from configData import getArgv, getSource, getSearch
 
 
 
@@ -12,22 +12,20 @@ class toElasticsearch:
     SEARCH = None
     
     def __init__(self):
-        self.ARGV = get_argv()      
-        self.SOURCE = get_source()
-        self.SEARCH = get_search()
+        self.ARGV = getArgv()      
+        self.SOURCE = getSource()
+        self.SEARCH = getSearch()
+        
+        # 클래스 초기화 시 ES 연결 생성
+        self.es = self.connect_elasticsearch()
         
     def connect_elasticsearch(self):
         url = self.SEARCH._elasticsearch_url
         
-        print(f"[INFO] Elasticsearch Connection URL : {url}")
-        
         return Elasticsearch(url)
 
     # json 파일을 elasticsearch에 색인
-    def to_elasticsearch(self):
-        
-        # Elasticsearch 연결 설정
-        es = self.connect_elasticsearch()
+    def toElasticsearch(self):
 
         # json 폴더 경로 설정
         json_dir = os.path.join('json', str(self.SOURCE._id))
@@ -50,7 +48,7 @@ class toElasticsearch:
                     # 리스트의 각 항목을 개별적으로 색인
                     for item in data_list:
                         try:
-                            es.index(
+                            self.es.index(
                                 index=self.SOURCE._index,
                                 body=item,
                                 id=item['url']
@@ -62,10 +60,13 @@ class toElasticsearch:
                             print(f"[ERROR] to_elasticsearch Index : {self.SOURCE._index} - {str(e)}")
             
                 # 파일 삭제
-                os.remove(file_path)
+                # os.remove(file_path)
             
             print(f"[INFO] Index {self.SOURCE._index} Data Count : {index_data_count}")
             print(f"[INFO] Index {self.SOURCE._index} Success Count : {index_success_count}")
+            
+            self.closeElasticsearch()
+            
             return True
             
         except Exception as e:
@@ -74,10 +75,20 @@ class toElasticsearch:
 
 
     # 인덱스 생성
-    def create_index(self):
+    def createIndex(self):
         
-        es = self.connect_elasticsearch()
-        
-        es.indices.create(index=f'{self.SOURCE._index}')
+        self.es.indices.create(index=f'{self.SOURCE._index}')
         
         print(f"[INFO] Index {self.SOURCE._index} Created")
+        
+    def urlCheck(self, url):
+        
+        response = self.es.search(index=self.SOURCE._index, body={"query": {"match": {"url": url}}})
+        
+        print('res : ', response['hits']['total']['value'])
+        
+        return response['hits']['total']['value']
+        
+    def closeElasticsearch(self):
+        self.es.close()
+        

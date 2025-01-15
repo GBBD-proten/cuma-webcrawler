@@ -2,10 +2,10 @@ import json
 import os
 from datetime import datetime
 
-from configData import get_source
+from configData import getSource
 
-def save_data_to_json(data):
-    source = get_source()
+def saveJson(data):
+    source = getSource()
     
     # 폴더 경로 생성
     folder_path = os.path.join('json', str(source._id))
