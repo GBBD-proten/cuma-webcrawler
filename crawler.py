@@ -114,7 +114,7 @@ class Crawler:
                  
     
                     
-            if(len(crawl_url_list) < 0):
+            if(len(crawl_url_list) <= 0):
                 print("Error: No crawl url found")
                 sys.exit(1)
                 
