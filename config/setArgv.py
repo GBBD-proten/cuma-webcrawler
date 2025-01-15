@@ -30,11 +30,15 @@ class ArgvData:
         
         if len(self.argv) > 3:
             print(f"SELECTED OPTION: {self.argv[3]}")
-            if self.argv[3] == "-json":
+            if '-json' in self.argv:
                 self._json = True
-
-        if '-debug' in self.argv:
-            self._debug = True
+            if '-bulk' in self.argv:
+                self._bulk = True
+            if '-json' not in self.argv and '-bulk' not in self.argv:
+                self._json = True
+                self._bulk = True
+            if '-debug' in self.argv:
+                self._debug = True
             
-        if '-test' in self.argv:
-            self._test = True
+            if '-test' in self.argv:
+                self._test = True

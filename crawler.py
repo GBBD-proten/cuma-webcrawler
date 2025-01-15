@@ -1,17 +1,18 @@
 import sys
 from playwright.sync_api import sync_playwright
 
-from configData import get_argv, get_source
+from configData import getArgv, getSource
 from custom import get_number_custom
-from toJson import save_data_to_json
+from toJson import saveJson
+from toElasticsearch import toElasticsearch
 
 class Crawler:
     ARGV = None
     SOURCE = None
 
     def __init__(self):
-        self.ARGV = get_argv()
-        self.SOURCE = get_source()
+        self.ARGV = getArgv()
+        self.SOURCE = getSource()
         print(f"Crawling {self.SOURCE._site} URL : {self.SOURCE._url}")
         
         # Playwright 인스턴스를 클래스 속성으로 저장
@@ -65,60 +66,62 @@ class Crawler:
                         a_element = title_element.locator('a').first
                         
                         crawl_url_list.append(self.SOURCE._host + a_element.get_attribute('href'))
-
+                        
+                        if self.ARGV._test:
+                            break
                 except Exception as e:
                     print(f"Error getting href: {e}")
-        
+            
         page.close()
         
         return crawl_url_list
 
     def getCrawlUrl(self):
 
-            # 실제로 수집해야할 URL 리스트
-            crawl_url_list = []
+        # 실제로 수집해야할 URL 리스트
+        crawl_url_list = []
+        
+        type = self.SOURCE._type
+        
+        main_url = ''
+        
+        type_list = type.split('/')
+        
+        link_type = type_list[0]
+        parameter_type = type_list[1]
+        
+        for i in range(int(self.SOURCE._min_parameter), int(self.SOURCE._max_parameter)):
             
-            type = self.SOURCE._type
+            if(link_type == 'parameter'):
+                main_url = self.SOURCE._url + '&' if '?' in self.SOURCE._url else self.SOURCE._url + '?'
             
-            main_url = ''
+            # 메인화면에서 수집해야할 URL 리스트
+            link_url_list = []
             
-            type_list = type.split('/')
+            main_url += f'{self.SOURCE._parameter}={str(i)}'
             
-            link_type = type_list[0]
-            parameter_type = type_list[1]
-            
-            for i in range(int(self.SOURCE._min_parameter), int(self.SOURCE._max_parameter)):
-                
-                if(link_type == 'parameter'):
-                    main_url = self.SOURCE._url + '&' if '?' in self.SOURCE._url else self.SOURCE._url + '?'
-                
-                # 메인화면에서 수집해야할 URL 리스트
-                link_url_list = []
-                
-                main_url += f'{self.SOURCE._parameter}={str(i)}'
-                
-                if(parameter_type == 'page'):
-                    link_url_list = self.parseCrawlUrl(main_url)
-                    if(len(link_url_list) > 0):
-                        crawl_url_list.extend(link_url_list)
-                        
-                elif(parameter_type == 'result'):
-                    crawl_url_list.append(main_url)
-                 
-                if self.ARGV._test:
-                    break
-                  
-                print(f"Link URL List : {link_url_list}")
-                
-            print(f"Crawl URL List : {crawl_url_list}")
-                 
-    
+            if(parameter_type == 'page'):
+                link_url_list = self.parseCrawlUrl(main_url)
+                if(len(link_url_list) > 0):
+                    crawl_url_list.extend(link_url_list)
                     
-            if(len(crawl_url_list) <= 0):
-                print("Error: No crawl url found")
-                sys.exit(1)
+            elif(parameter_type == 'result'):
+                crawl_url_list.append(main_url)
+             
+            if self.ARGV._test:
+                break
+              
+            print(f"Link URL List : {link_url_list}")
+            
+        print(f"Crawl URL List : {crawl_url_list}")
+             
+    
                 
-            return crawl_url_list
+        if(len(crawl_url_list) <= 0):
+            print("Error: No crawl url found")
+            sys.exit(1)
+            
+        return crawl_url_list
                     
             
 
@@ -137,13 +140,32 @@ class Crawler:
 
 
     def mainCrawler(self, crawl_url_list):
+        
         print(f"Crawling URL : {crawl_url_list}")
         print(f"Crawling URL Count : {len(crawl_url_list)}")
+        
+        real_crawl_url_list = []
+        
+        to_elasticsearch = toElasticsearch()
+        
+        try:
+            for url in crawl_url_list:
+                if(to_elasticsearch.urlCheck(url) > 0):
+                    continue
+                else:
+                    real_crawl_url_list.append(url)
+        finally:
+            to_elasticsearch.closeElasticsearch()
+        
+        print(f"Real Crawling URL : {real_crawl_url_list}")
+        print(f"Real Crawling URL Count : {len(real_crawl_url_list)}")
+        
+        
         
         crawl_data = []
         page = self.browser.new_page()
 
-        for url in crawl_url_list:
+        for url in real_crawl_url_list:
             
             page.goto(url)
             

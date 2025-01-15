@@ -11,11 +11,11 @@ def setConfig(argv):
     SEARCH = SearchData.getInstance()
     
     
-def get_argv():
+def getArgv():
     return ARGV
 
-def get_source():
+def getSource():
     return SOURCE
 
-def get_search():
+def getSearch():
     return SEARCH

@@ -1,15 +1,15 @@
 import sys
 
-from configData import setConfig, get_argv
+from configData import setConfig, getArgv
 from crawler import Crawler
-from toJson import save_data_to_json
+from toJson import saveJson
 from toElasticsearch import toElasticsearch
 
 argv = None
 
 def modeDivision():
     global argv
-    argv = get_argv()
+    argv = getArgv()
     
     if argv._mode == "cra":
         crawler = Crawler()
@@ -19,29 +19,28 @@ def modeDivision():
         print(f"Crawl Data Count : {crawl_data_count}")
         
         if crawl_data_count > 0:
+            
             if argv._json:
-                save_data_to_json(crawl_data)
-                
-                return True
-            
-            save_data_to_json(crawl_data)
-            
-            # elasticsearch 색인
-            toelasticsearch = toElasticsearch()
-            isOk = toelasticsearch.to_elasticsearch()
-            
-            if isOk:
-                return True
-            else:
-                return False
+                saveJson(crawl_data)
+
+            if argv._bulk:  
+                # elasticsearch 색인
+                to_elasticsearch = toElasticsearch()
+                isOk = to_elasticsearch.toElasticsearch()
+                to_elasticsearch.closeElasticsearch()
+
+                if isOk:
+                    return True
+                else:
+                    return False
         else:
             print("[INFO] No crawl data found")
             return True
         
     elif argv._mode == "index":
-        toelasticsearch = toElasticsearch()
-        toelasticsearch.create_index()
-
+        to_elasticsearch = toElasticsearch()
+        to_elasticsearch.createIndex()
+        to_elasticsearch.closeElasticsearch()
 
 def main():
     if len(sys.argv) <= 2:
