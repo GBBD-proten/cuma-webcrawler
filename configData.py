@@ -4,11 +4,11 @@ ARGV = None
 SOURCE = None
 SEARCH = None
 
-def set_config(argv):
+def setConfig(argv):
     global ARGV, SOURCE, SEARCH
-    ARGV = ArgvData.get_instance(argv)
-    SOURCE = SourceData.get_instance(argv[1])
-    SEARCH = SearchData.get_instance()
+    ARGV = ArgvData.getInstance(argv)
+    SOURCE = SourceData.getInstance(argv[1])
+    SEARCH = SearchData.getInstance()
     
     
 def get_argv():

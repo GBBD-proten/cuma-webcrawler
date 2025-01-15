@@ -1,19 +1,19 @@
 import sys
 
-from configData import set_config, get_argv
+from configData import setConfig, get_argv
 from crawler import Crawler
 from toJson import save_data_to_json
 from toElasticsearch import toElasticsearch
 
 argv = None
 
-def mode_division():
+def modeDivision():
     global argv
     argv = get_argv()
     
     if argv._mode == "cra":
         crawler = Crawler()
-        crawl_data = crawler.start_crawl()
+        crawl_data = crawler.getCrawlData()
         crawl_data_count = len(crawl_data)
         
         print(f"Crawl Data Count : {crawl_data_count}")
@@ -50,10 +50,10 @@ def main():
         sys.exit(1)  # 1은 에러 코드를 나타냄 (0은 정상 종료)
         
     # data 설정
-    set_config(sys.argv)
+    setConfig(sys.argv)
     
     # 모드 구분
-    isOk = mode_division()  
+    isOk = modeDivision()  
     
     if isOk:
         print(f"[INFO] Crawler {argv._id} Mode : {argv._mode} Success")
