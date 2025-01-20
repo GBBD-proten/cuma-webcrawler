@@ -4,9 +4,8 @@
 
 ## 웹 크롤러 설정
 
-1. config 폴더 추가
-2. config 폴더 하위에 source 폴더 추가
-3. source 폴더에 json 파일 추가
+1. config 폴더 하위에 source 폴더 추가
+2. source 폴더에 json 파일 추가 (파일 이름은 id와 동일하게 설정)
 
    json 파일 예시
 
@@ -55,6 +54,12 @@
        }
      }
    }
+   ```
+
+3. poetry 설치
+
+   ```bash
+   pip install poetry==1.8.5
    ```
 
 4. 패키지 설치
