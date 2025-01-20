@@ -2,7 +2,40 @@
 
 커뮤니티 마스터 웹 크롤러
 
-## 웹 크롤러 설정
+## Poetry 설치
+
+1. poetry 설치
+
+   ```bash
+   pip install poetry==1.8.5
+   ```
+
+2. 패키지 설치
+
+   ```bash
+   poetry install
+   ```
+
+3. 가상화 설정
+
+   ```bash
+   poetry shell
+   ```
+
+## Elasticsearch 설정
+
+1. config 폴더 하위에 search.json 파일 확인
+
+   ```json
+   {
+     "elasticsearch": {
+       "host": "localhost",
+       "port": "6903"
+     }
+   }
+   ```
+
+## 수집 설정
 
 1. config 폴더 하위에 source 폴더 추가
 2. source 폴더에 json 파일 추가 (파일 이름은 id와 동일하게 설정)
@@ -56,25 +89,7 @@
    }
    ```
 
-3. poetry 설치
-
-   ```bash
-   pip install poetry==1.8.5
-   ```
-
-4. 패키지 설치
-
-   ```bash
-   poetry install
-   ```
-
-5. 가상화 설정
-
-   ```bash
-   poetry shell
-   ```
-
-6. 웹 크롤러 실행
+3. 웹 크롤러 실행
 
    ```bash
    python run.py [id] [mode] [option]
@@ -92,4 +107,4 @@ python run.py [id] [mode] [option]
 - option
   - -json : json 파일로 저장
   - -debug : 디버그 모드
-  - -test : 테스트 모드 (게시물 1개만 수집)
+  - -test [숫자]: 테스트 모드 (게시물 숫자만큼 수집)
