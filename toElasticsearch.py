@@ -85,8 +85,6 @@ class toElasticsearch:
         
         response = self.es.search(index=self.SOURCE._index, body={"query": {"match": {"url": url}}})
         
-        print('res : ', response['hits']['total']['value'])
-        
         return response['hits']['total']['value']
         
     def closeElasticsearch(self):

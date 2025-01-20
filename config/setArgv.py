@@ -8,6 +8,7 @@ class ArgvData:
         return cls._instance
     
     def __init__(self, argv=None):
+        print(f"argv: {argv}")
         if argv is None:
             return
         
@@ -18,6 +19,7 @@ class ArgvData:
         self._bulk = False
         self._debug = False
         self._test = False
+        self._test_count = 0
 
         self.loadArgv()
         
@@ -29,7 +31,7 @@ class ArgvData:
         self._mode = self.argv[2]
         
         if len(self.argv) > 3:
-            print(f"SELECTED OPTION: {self.argv[3]}")
+            print(f"SELECTED OPTION: {self.argv[3:]}")
             if '-json' in self.argv:
                 self._json = True
             if '-bulk' in self.argv:
@@ -42,3 +44,15 @@ class ArgvData:
             
             if '-test' in self.argv:
                 self._test = True
+                test_index = self.argv.index('-test')
+                
+                # -test 다음 인덱스에 숫자가 있는지 확인
+                if test_index + 1 < len(self.argv):
+                    try:
+                        self._test_count = int(self.argv[test_index + 1])
+                    except ValueError:
+                        # 숫자가 아닌 경우 무시
+                        pass
+                    
+                    print(f"TEST COUNT: {self._test_count}")
+
