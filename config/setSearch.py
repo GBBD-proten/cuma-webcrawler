@@ -25,7 +25,7 @@ class SearchData:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     data = json.load(f)
                     
-                self._elasticsearch_url = data['elastic']['host'] + ':' + data['elastic']['port']
+                self._elasticsearch_url = data['elasticsearch']['host'] + ':' + data['elasticsearch']['port']
             else:
                 print({"error": f"file [{file_path}] is not exist config file."})
         except Exception as e:

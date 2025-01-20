@@ -1,5 +1,5 @@
 {
-  "elastic": {
+  "elasticsearch": {
     "host": "http://localhost",
     "port": "6203"
   }
