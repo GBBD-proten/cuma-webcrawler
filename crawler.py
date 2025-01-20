@@ -67,8 +67,6 @@ class Crawler:
                         
                         crawl_url_list.append(self.SOURCE._host + a_element.get_attribute('href'))
                         
-                        if self.ARGV._test:
-                            break
                 except Exception as e:
                     print(f"Error getting href: {e}")
             
