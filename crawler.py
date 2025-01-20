@@ -164,6 +164,8 @@ class Crawler:
         
         crawl_data = []
         page = self.browser.new_page()
+        
+        crawl_count = 0
 
         for url in real_crawl_url_list:
             
@@ -201,8 +203,10 @@ class Crawler:
                     'url': url
                 })
                 
-                if self.ARGV._test:
+                if self.ARGV._test and crawl_count >= self.ARGV._test_count:
                     break
+                
+                crawl_count += 1
                 
             else:
                 print(f"Error: {page.url} is not {url}")
