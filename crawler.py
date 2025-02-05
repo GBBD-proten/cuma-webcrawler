@@ -32,8 +32,7 @@ class Crawler:
             self.playwright.stop()
         
     # 수집하는 사이트 출력
-    @staticmethod
-    def printSite(site):
+    def printSite(self, site):
         print(f"Crawling Site : {site}")
     
     # playwright 브라우저 옵션 설정
@@ -51,13 +50,12 @@ class Crawler:
         page.goto(main_url)
         
         # SOURCE._contents에 해당하는 모든 요소 선택
-        tbody_elements = page.locator(self.SOURCE._contents).all()
-        
-        tr_elements = tbody_elements[0].locator('tr').all()
+        contents_elements = page.locator(self.SOURCE._contents).all()
         
         crawl_url_list = []
         
         if(self.SOURCE._site == 'dc'):
+            tr_elements = contents_elements[0].locator('tr').all()
             # 각 요소의 href 속성 가져오기
             for element in tr_elements:
                 try:
@@ -67,6 +65,17 @@ class Crawler:
                         
                         crawl_url_list.append(self.SOURCE._host + a_element.get_attribute('href'))
                         
+                except Exception as e:
+                    print(f"Error getting href: {e}")
+                    
+        elif(self.SOURCE._site == 'fmkorea'):
+            tr_elements = contents_elements[0].locator('tr').all()
+            # 각 요소의 href 속성 가져오기
+            for element in tr_elements:
+                try:
+                    title_element = element.locator('.title').first
+                    a_element = title_element.locator('a').first
+                    crawl_url_list.append(self.SOURCE._host + a_element.get_attribute('href'))
                 except Exception as e:
                     print(f"Error getting href: {e}")
             
@@ -129,10 +138,9 @@ class Crawler:
         crawl_data = []
         url_list = []
         
-        if(self.SOURCE._site == 'dc'):
-            self.printSite(self.SOURCE._site)
-            url_list = self.getCrawlUrl()
-            crawl_data = self.mainCrawler(url_list)
+        self.printSite(self.SOURCE._site)
+        url_list = self.getCrawlUrl()
+        crawl_data = self.mainCrawler(url_list)
         
         return crawl_data
 
