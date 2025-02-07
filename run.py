@@ -15,32 +15,33 @@ def modeDivision():
         crawler = Crawler()
         crawl_data = crawler.getCrawlData()
         crawl_data_count = len(crawl_data)
+        isOk = False
         
         print(f"Crawl Data Count : {crawl_data_count}")
         
         if crawl_data_count > 0:
             
             if argv._json:
-                saveJson(crawl_data)
+                isOk = saveJson(crawl_data)
 
             if argv._bulk:  
                 # elasticsearch 색인
                 to_elasticsearch = toElasticsearch()
                 isOk = to_elasticsearch.toElasticsearch()
                 to_elasticsearch.closeElasticsearch()
-
-                if isOk:
-                    return True
-                else:
-                    return False
         else:
             print("[INFO] No crawl data found")
             return True
-        
     elif argv._mode == "index":
         to_elasticsearch = toElasticsearch()
-        to_elasticsearch.createIndex()
+        isOk = to_elasticsearch.createIndex()
         to_elasticsearch.closeElasticsearch()
+    elif argv._mode == "delete":
+        to_elasticsearch = toElasticsearch()
+        isOk = to_elasticsearch.deleteIndex()
+        to_elasticsearch.closeElasticsearch()
+    
+    return isOk
 
 def main():
     if len(sys.argv) <= 2:
