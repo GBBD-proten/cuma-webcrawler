@@ -38,6 +38,7 @@ jobs:
       # 3. Docker and push
       - name: Build and push Docker image
         run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/cuma_webcrawler:latest .
           docker push ${{ secrets.DOCKER_USERNAME }}/cuma_webcrawler:latest
 
       # 4. ssh connect to server
