@@ -11,7 +11,7 @@
 # For more information on Codacy Analysis CLI in general, see
 # https://github.com/codacy/codacy-analysis-cli.
 
-name: Deploy Docker
+name: Deploy Cralwer
 
 on:
   push:
@@ -28,20 +28,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Docker login
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      # 3. Docker and push
-      - name: Build and push Docker image
-        run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/cuma_webcrawler:latest .
-          docker push ${{ secrets.DOCKER_USERNAME }}/cuma_webcrawler:latest
-
-      # 4. ssh connect to server
+      # 2. ssh connect to server
       - name: Deploy to server
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -49,7 +36,5 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            docker pull ${{ secrets.DOCKER_USERNAME }}/cuma_webcrawler:latest
-            docker stop cuma_webcrawler || true
-            docker rm cuma_webcrawler || true
-            docker run ${{ secrets.BACKEND_PATH }}:app/ -d --name cuma_webcrawler -p 5000:5000 ${{ secrets.DOCKER_USERNAME }}/cuma_webcrawler:latest
+            cd ${{ secrets.WEBCRAWLER_PATH }}
+            git pull origin main
