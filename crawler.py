@@ -187,18 +187,22 @@ class Crawler:
                         continue
                     subject_text = subject_element.text_content()
                     
-                    
-                    # script 태그 제거 후 콘텐츠 가져오기
-                    content_element = page.evaluate("""
-                        selector => {
-                            const element = document.querySelector(selector);
-                            const scripts = element.getElementsByTagName('script');
-                            while(scripts.length > 0){
-                                scripts[0].parentNode.removeChild(scripts[0]);
+                    if(self.SOURCE._site == 'dc'):
+                        # script 태그 제거 후 콘텐츠 가져오기
+                        content_element = page.evaluate("""
+                            selector => {
+                                const element = document.querySelector(selector);
+                                const scripts = element.getElementsByTagName('script');
+                                while(scripts.length > 0){
+                                    scripts[0].parentNode.removeChild(scripts[0]);
+                                }
+                                return element.textContent;
                             }
-                            return element.textContent;
-                        }
-                    """, self.SOURCE._content['selector'])
+                        """, self.SOURCE._content['selector'])
+                    else:
+                        content_element = page.locator(self.SOURCE._content['selector']).first
+                        
+                    print(f"[MainCrawler] Content Element : {content_element}")
                     
                     content_text = content_element.replace('\n', '').replace('\t', '').replace('\r', '').replace('\v', '').replace('\f', '')
                     
