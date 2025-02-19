@@ -179,6 +179,7 @@ class Crawler:
                         continue
                     subject_text = subject_element.text_content()
                     
+                    
                     # script 태그 제거 후 콘텐츠 가져오기
                     content_element = page.evaluate("""
                         selector => {
