@@ -3,6 +3,7 @@ import os
 from elasticsearch import Elasticsearch
 
 from configData import getArgv, getSource, getSearch
+from toJson import getIndexName
 
 
 
@@ -73,14 +74,49 @@ class toElasticsearch:
             print(f"[ERROR] to_elasticsearch : {str(e)}")
             return False
 
-
     # 인덱스 생성
     def createIndex(self):
+        try:
+            index_name = getIndexName(self.ARGV._id)
+            
+            # index 폴더에서 해당 인덱스 설정 파일 찾기
+            index_file_path = os.path.join('config','index', f'{index_name}.json')
+            
+            # index 설정 파일이 존재하는지 확인
+            if not os.path.exists(index_file_path):
+                raise FileNotFoundError(f"[ERROR] Index file not found: {index_file_path}")
+            
+            # index JSON 설정 파일 읽기
+            with open(index_file_path, 'r', encoding='utf-8') as file:
+                index_settings = json.load(file)
+            
+            # 인덱스 생성
+            self.es.indices.create(
+                index=self.SOURCE._index,
+                body=index_settings
+            )
+            
+            print(f"[INFO] Index {self.SOURCE._index} Created with custom settings")
+            return True
+            
+        except Exception as e:
+            print(f"[ERROR] Failed to create index: {str(e)}")
+            return False
         
-        self.es.indices.create(index=f'{self.SOURCE._index}')
+    def deleteIndex(self):
+        try:
+            index_name = getIndexName(self.ARGV._id)
+            
+            self.es.indices.delete(index=index_name)
+            
+            print(f"[INFO] Index {index_name} Deleted")
+            return True
         
-        print(f"[INFO] Index {self.SOURCE._index} Created")
+        except Exception as e:
+            print(f"[ERROR] Failed to delete index: {str(e)}")
+            return False
         
+    # 수집한 URL 중복 체크
     def urlCheck(self, url):
         
         response = self.es.search(index=self.SOURCE._index, body={"query": {"match": {"url": url}}})
