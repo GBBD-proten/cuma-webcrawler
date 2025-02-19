@@ -165,50 +165,58 @@ class Crawler:
         
         crawl_count = 0
 
-        for url in real_crawl_url_list:
-            
-            page.goto(url)
-            
-            if(page.url == url):
+        try:
+            for url in real_crawl_url_list:
                 
-                # 게시물 정보 가져오기
-                subject_text = page.locator(self.SOURCE._subject['selector']).first.text_content()
+                page.goto(url)
                 
-                # script 태그 제거 후 콘텐츠 가져오기
-                content_element = page.evaluate("""
-                    selector => {
-                        const element = document.querySelector(selector);
-                        const scripts = element.getElementsByTagName('script');
-                        while(scripts.length > 0){
-                            scripts[0].parentNode.removeChild(scripts[0]);
+                if(page.url == url):
+                    
+                    # 게시물 정보 가져오기
+                    subject_element = page.locator(self.SOURCE._subject['selector']).first
+                    if not subject_element:
+                        print(f"[MainCrawler] Subject Element Not Found: {url}")
+                        continue
+                    subject_text = subject_element.text_content()
+                    
+                    # script 태그 제거 후 콘텐츠 가져오기
+                    content_element = page.evaluate("""
+                        selector => {
+                            const element = document.querySelector(selector);
+                            const scripts = element.getElementsByTagName('script');
+                            while(scripts.length > 0){
+                                scripts[0].parentNode.removeChild(scripts[0]);
+                            }
+                            return element.textContent;
                         }
-                        return element.textContent;
-                    }
-                """, self.SOURCE._content['selector'])
-                
-                content_text = content_element.replace('\n', '').replace('\t', '').replace('\r', '').replace('\v', '').replace('\f', '')
-                
-                date_text = get_number_custom(page.locator(self.SOURCE._date['selector']).first.text_content())
-                view_text = get_number_custom(page.locator(self.SOURCE._view['selector']).first.text_content())
-                like_text = get_number_custom(page.locator(self.SOURCE._like['selector']).first.text_content())
+                    """, self.SOURCE._content['selector'])
+                    
+                    content_text = content_element.replace('\n', '').replace('\t', '').replace('\r', '').replace('\v', '').replace('\f', '')
+                    
+                    date_text = get_number_custom(page.locator(self.SOURCE._date['selector']).first.text_content())
+                    view_text = get_number_custom(page.locator(self.SOURCE._view['selector']).first.text_content())
+                    like_text = get_number_custom(page.locator(self.SOURCE._like['selector']).first.text_content())
 
-                crawl_data.append({
-                    'subject': subject_text,
-                    'content': content_text,
-                    'date': date_text,
-                    'view': view_text,
-                    'like': like_text,
-                    'url': url
-                })
+                    crawl_data.append({
+                        'subject': subject_text,
+                        'content': content_text,
+                        'date': date_text,
+                        'view': view_text,
+                        'like': like_text,
+                        'url': url
+                    })
+                    
+                    if self.ARGV._test and crawl_count >= self.ARGV._test_count:
+                        break
+                    
+                    crawl_count += 1
                 
-                if self.ARGV._test and crawl_count >= self.ARGV._test_count:
-                    break
+                else:
+                    print(f"[MainCrawler] {page.url} is not {url}")
                 
-                crawl_count += 1
-                
-            else:
-                print(f"Error: {page.url} is not {url}")
-                
+        except Exception as e:
+            print(f"[MainCrawler] Error: {e}")
+            
         return crawl_data
     
     def getCrawlData(self):
