@@ -32,6 +32,11 @@ def modeDivision():
         else:
             print("[INFO] No crawl data found")
             return True
+        
+    elif argv._mode == "crabulk":
+        to_elasticsearch = toElasticsearch()
+        isOk = to_elasticsearch.toElasticsearch()
+        to_elasticsearch.closeElasticsearch()
     elif argv._mode == "index":
         to_elasticsearch = toElasticsearch()
         isOk = to_elasticsearch.createIndex()

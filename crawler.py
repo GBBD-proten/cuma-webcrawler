@@ -178,6 +178,11 @@ class Crawler:
                 
                 page.goto(url)
                 
+                body_content = page.locator('body').text_content().strip()
+                if not body_content:
+                    print(f"[MainCrawler] Empty body content: {url}")
+                    continue
+                
                 if(page.url == url):
                     
                     # 게시물 정보 가져오기
@@ -201,8 +206,6 @@ class Crawler:
                         """, self.SOURCE._content['selector'])
                     else:
                         content_element = page.locator(self.SOURCE._content['selector']).first
-                        
-                    print(f"[MainCrawler] Content Element : {content_element}")
                     
                     content_text = content_element.replace('\n', '').replace('\t', '').replace('\r', '').replace('\v', '').replace('\f', '')
                     
