@@ -1,6 +1,6 @@
 import json
 import os
-
+import sys
 class SourceData:
     _instance = None
     
@@ -61,6 +61,7 @@ class SourceData:
                 self._view = data['info']['view']
                 self._like = data['info']['like']
             else:
-                print({"error": f"ID [{self._id}] is not exist source file."})
+                raise Exception(f"ID [{self._id}] is not exist source file.")
         except Exception as e:
-            print({"error": f"source file read error: ID [{self._id}] {str(e)}"})
+            raise Exception(f"source file read error: {str(e)}")
+
