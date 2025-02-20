@@ -1,9 +1,9 @@
 
 
 
-def view_custom(view):
-    return view.replace('조회', '').replace(' ', '')
+def getIntCustom(text):
+    return int(''.join(filter(str.isdigit, str(text))))
 
-
-def get_number_custom(text):
+def getStringCustom(text):
     return ''.join(filter(str.isdigit, str(text)))
+

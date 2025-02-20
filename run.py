@@ -1,47 +1,52 @@
 import sys
 
-from configData import set_config, get_argv
+from configData import setConfig, getArgv
 from crawler import Crawler
-from toJson import save_data_to_json
+from toJson import saveJson
 from toElasticsearch import toElasticsearch
 
 argv = None
 
-def mode_division():
+def modeDivision():
     global argv
-    argv = get_argv()
+    argv = getArgv()
     
     if argv._mode == "cra":
         crawler = Crawler()
-        crawl_data = crawler.start_crawl()
+        crawl_data = crawler.getCrawlData()
         crawl_data_count = len(crawl_data)
+        isOk = False
         
         print(f"Crawl Data Count : {crawl_data_count}")
         
         if crawl_data_count > 0:
+            
             if argv._json:
-                save_data_to_json(crawl_data)
-                
-                return True
-            
-            save_data_to_json(crawl_data)
-            
-            # elasticsearch 색인
-            toelasticsearch = toElasticsearch()
-            isOk = toelasticsearch.to_elasticsearch()
-            
-            if isOk:
-                return True
-            else:
-                return False
+                isOk = saveJson(crawl_data)
+
+            if argv._bulk:  
+                # elasticsearch 색인
+                to_elasticsearch = toElasticsearch()
+                isOk = to_elasticsearch.toElasticsearch()
+                to_elasticsearch.closeElasticsearch()
         else:
             print("[INFO] No crawl data found")
             return True
         
+    elif argv._mode == "crabulk":
+        to_elasticsearch = toElasticsearch()
+        isOk = to_elasticsearch.toElasticsearch()
+        to_elasticsearch.closeElasticsearch()
     elif argv._mode == "index":
-        toelasticsearch = toElasticsearch()
-        toelasticsearch.create_index()
-
+        to_elasticsearch = toElasticsearch()
+        isOk = to_elasticsearch.createIndex()
+        to_elasticsearch.closeElasticsearch()
+    elif argv._mode == "delete":
+        to_elasticsearch = toElasticsearch()
+        isOk = to_elasticsearch.deleteIndex()
+        to_elasticsearch.closeElasticsearch()
+    
+    return isOk
 
 def main():
     if len(sys.argv) <= 2:
@@ -50,10 +55,10 @@ def main():
         sys.exit(1)  # 1은 에러 코드를 나타냄 (0은 정상 종료)
         
     # data 설정
-    set_config(sys.argv)
+    setConfig(sys.argv)
     
     # 모드 구분
-    isOk = mode_division()  
+    isOk = modeDivision()  
     
     if isOk:
         print(f"[INFO] Crawler {argv._id} Mode : {argv._mode} Success")

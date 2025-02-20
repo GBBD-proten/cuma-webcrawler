@@ -1,52 +1,61 @@
 import sys
 from playwright.sync_api import sync_playwright
 
-from configData import get_argv, get_source
-from custom import get_number_custom
-from toJson import save_data_to_json
+from configData import getArgv, getSource
+from custom import getStringCustom, getIntCustom
+from toJson import saveJson
+from toElasticsearch import toElasticsearch
 
 class Crawler:
     ARGV = None
     SOURCE = None
 
     def __init__(self):
-        self.ARGV = get_argv()
-        self.SOURCE = get_source()
-        
+        self.ARGV = getArgv()
+        self.SOURCE = getSource()
         print(f"Crawling {self.SOURCE._site} URL : {self.SOURCE._url}")
         
+        # Playwright 인스턴스를 클래스 속성으로 저장
+        self.playwright = sync_playwright().start()
+        # 브라우저 인스턴스 생성
+        self.browser = self.playwright.chromium.launch(**self.setBrowserOption())
         
-    @staticmethod
-    def print_site(site):
+
+        self.crawl_data = self.siteDivision()
+
+    
+    def __del__(self):
+        # 객체가 삭제될 때 정리
+        if hasattr(self, 'browser') and self.browser:
+            self.browser.close()
+        if hasattr(self, 'playwright') and self.playwright:
+            self.playwright.stop()
+        
+    # 수집하는 사이트 출력
+    def printSite(self, site):
         print(f"Crawling Site : {site}")
     
-    def set_browser_option(self):
-        
-        # headless=True로 설정하면 브라우저가 보이지 않음
+    # playwright 브라우저 옵션 설정
+    def setBrowserOption(self):
         return {
-            'headless': False
+            'headless': False   # headless=True로 설정하면 브라우저가 보이지 않음
         }
-
-    def dc_crawl(self):
-        # Playwright 실행
-        with sync_playwright() as p:
-            # Chromium 브라우저 열기
-            browser = p.chromium.launch(**self.set_browser_option())  ## **은 언패킹 연산자 -> 딕셔너리를 키워드로 풀어서 전달함
-            page = browser.new_page()
-            
-            type = self.SOURCE._type
-            
-            
-            # 페이지 로드
-            page.goto(self.SOURCE._url)
-            
-            # SOURCE._contents에 해당하는 모든 요소 선택
-            tbody_elements = page.locator(self.SOURCE._contents).all()
-            
-            tr_elements = tbody_elements[0].locator('tr').all()
-            
-            crawl_url_list = []
-            
+        
+        
+    ## 메인화면에서 URL 리스트 파싱
+    def parseCrawlUrl(self, main_url):
+        page = self.browser.new_page()
+        
+        # 페이지 로드
+        page.goto(main_url)
+        
+        # SOURCE._contents에 해당하는 모든 요소 선택
+        contents_elements = page.locator(self.SOURCE._contents).all()
+        
+        crawl_url_list = []
+        
+        if(self.SOURCE._site == 'dc'):
+            tr_elements = contents_elements[0].locator('tr').all()
             # 각 요소의 href 속성 가져오기
             for element in tr_elements:
                 try:
@@ -55,84 +64,181 @@ class Crawler:
                         a_element = title_element.locator('a').first
                         
                         crawl_url_list.append(self.SOURCE._host + a_element.get_attribute('href'))
-
+                        
+                except Exception as e:
+                    print(f"Error getting href: {e}")
+                    
+        elif(self.SOURCE._site == 'fmkorea'):
+            tr_elements = contents_elements[0].locator('tr').all()
+            # 각 요소의 href 속성 가져오기
+            for element in tr_elements:
+                try:
+                    title_element = element.locator('.title').first
+                    a_element = title_element.locator('a').first
+                    crawl_url_list.append(self.SOURCE._host + a_element.get_attribute('href'))
                 except Exception as e:
                     print(f"Error getting href: {e}")
             
-            page.close()
+        page.close()
+        
+        return crawl_url_list
+
+    def getCrawlUrl(self):
+
+        # 실제로 수집해야할 URL 리스트
+        crawl_url_list = []
+        
+        type = self.SOURCE._type
+        
+        main_url = ''
+        
+        type_list = type.split('/')
+        
+        link_type = type_list[0]
+        parameter_type = type_list[1]
+        
+        for i in range(int(self.SOURCE._min_parameter), int(self.SOURCE._max_parameter)):
             
-            if(len(crawl_url_list) > 0):
-                return self.main_crawl(browser, crawl_url_list)
-            else:
-                print("Error: No crawl url found")
+            if(link_type == 'parameter'):
+                main_url = self.SOURCE._url + '&' if '?' in self.SOURCE._url else self.SOURCE._url + '?'
+            
+            # 메인화면에서 수집해야할 URL 리스트
+            link_url_list = []
+            
+            main_url += f'{self.SOURCE._parameter}={str(i)}'
+            
+            if(parameter_type == 'page'):
+                link_url_list = self.parseCrawlUrl(main_url)
+                if(len(link_url_list) > 0):
+                    crawl_url_list.extend(link_url_list)
+                    
+            elif(parameter_type == 'result'):
+                crawl_url_list.append(main_url)
+             
+            if self.ARGV._test:
+                break
+              
+            print(f"Link URL List : {link_url_list}")
+            
+        print(f"Crawl URL List : {crawl_url_list}")
+             
+    
                 
-                sys.exit(1)
+        if(len(crawl_url_list) <= 0):
+            print("Error: No crawl url found")
+            sys.exit(1)
+            
+        return crawl_url_list
+                    
+            
 
     # 사이트 구분
-    def crawl_site_division(self):
+    def siteDivision(self):
         
         crawl_data = []
+        url_list = []
         
-        if(self.SOURCE._site == 'dc'):
-            self.print_site(self.SOURCE._site)
-            crawl_data = self.dc_crawl()
+        self.printSite(self.SOURCE._site)
+        url_list = self.getCrawlUrl()
+        crawl_data = self.mainCrawler(url_list)
         
         return crawl_data
 
 
-    def main_crawl(self, browser, crawl_url_list):
+    def mainCrawler(self, crawl_url_list):
+        
         print(f"Crawling URL : {crawl_url_list}")
         print(f"Crawling URL Count : {len(crawl_url_list)}")
         
+        real_crawl_url_list = []
+        
+        to_elasticsearch = toElasticsearch()
+        
+        try:
+            for url in crawl_url_list:
+                if(to_elasticsearch.urlCheck(url) > 0):
+                    continue
+                else:
+                    real_crawl_url_list.append(url)
+        finally:
+            to_elasticsearch.closeElasticsearch()
+        
+        print(f"Real Crawling URL : {real_crawl_url_list}")
+        print(f"Real Crawling URL Count : {len(real_crawl_url_list)}")
+        
+        
+        
         crawl_data = []
+        page = self.browser.new_page()
+        
+        crawl_count = 0
 
-        for url in crawl_url_list:
-            page = browser.new_page()
-            page.goto(url)
-            
-            if(page.url == url):
+        try:
+            for url in real_crawl_url_list:
                 
-                # 게시물 정보 가져오기
-                subject_text = page.locator(self.SOURCE._subject['selector']).first.text_content()
+                page.goto(url)
                 
-                # script 태그 제거 후 콘텐츠 가져오기
-                content_element = page.evaluate("""
-                    selector => {
-                        const element = document.querySelector(selector);
-                        const scripts = element.getElementsByTagName('script');
-                        while(scripts.length > 0){
-                            scripts[0].parentNode.removeChild(scripts[0]);
-                        }
-                        return element.textContent;
-                    }
-                """, self.SOURCE._content['selector'])
+                body_content = page.locator('body').text_content().strip()
+                if not body_content:
+                    print(f"[MainCrawler] Empty body content: {url}")
+                    continue
                 
-                content_text = content_element.replace('\n', '').replace('\t', '').replace('\r', '').replace('\v', '').replace('\f', '')
-                
-                date_text = get_number_custom(page.locator(self.SOURCE._date['selector']).first.text_content())
-                view_text = get_number_custom(page.locator(self.SOURCE._view['selector']).first.text_content())
-                like_text = get_number_custom(page.locator(self.SOURCE._like['selector']).first.text_content())
+                if(page.url == url):
+                    
+                    # 게시물 정보 가져오기
+                    subject_element = page.locator(self.SOURCE._subject['selector']).first
+                    if not subject_element:
+                        print(f"[MainCrawler] Subject Element Not Found: {url}")
+                        continue
+                    subject_text = subject_element.text_content()
+                    
+                    if(self.SOURCE._site == 'dc'):
+                        # script 태그 제거 후 콘텐츠 가져오기
+                        content_element = page.evaluate("""
+                            selector => {
+                                const element = document.querySelector(selector);
+                                const scripts = element.getElementsByTagName('script');
+                                while(scripts.length > 0){
+                                    scripts[0].parentNode.removeChild(scripts[0]);
+                                }
+                                return element.textContent;
+                            }
+                        """, self.SOURCE._content['selector'])
+                    else:
+                        content_element = page.locator(self.SOURCE._content['selector']).first
+                    
+                    content_text = content_element.replace('\n', '').replace('\t', '').replace('\r', '').replace('\v', '').replace('\f', '')
+                    
+                    date_text = getStringCustom(page.locator(self.SOURCE._date['selector']).first.text_content())
+                    view_text = getIntCustom(page.locator(self.SOURCE._view['selector']).first.text_content())
+                    like_text = getIntCustom(page.locator(self.SOURCE._like['selector']).first.text_content())
 
-                crawl_data.append({
-                    'subject': subject_text,
-                    'content': content_text,
-                    'date': date_text,
-                    'view': view_text,
-                    'like': like_text,
-                    'url': url
-                })
+                    crawl_data.append({
+                        'subject': subject_text,
+                        'content': content_text,
+                        'date': date_text,
+                        'view': view_text,
+                        'like': like_text,
+                        'url': url,
+                        'site': self.SOURCE._site,
+                        'category': self.SOURCE._category,
+                        'category_name': self.SOURCE._category_name
+                    })
+                    
+                    if self.ARGV._test and crawl_count >= self.ARGV._test_count:
+                        break
+                    
+                    crawl_count += 1
                 
-                if self.ARGV._test:
-                    break
-            else:
-                print(f"Error: {page.url} is not {url}")
+                else:
+                    print(f"[MainCrawler] {page.url} is not {url}")
+                
+        except Exception as e:
+            print(f"[MainCrawler] Error: {e}")
             
-            page.close()
-                
         return crawl_data
     
-    def start_crawl(self):
-        crawl_data = self.crawl_site_division()
+    def getCrawlData(self):
+        return self.crawl_data
+    
         
-        
-        return crawl_data

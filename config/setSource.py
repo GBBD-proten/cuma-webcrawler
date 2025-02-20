@@ -1,11 +1,11 @@
 import json
 import os
-
+import sys
 class SourceData:
     _instance = None
     
     @classmethod
-    def get_instance(cls, id=None):
+    def getInstance(cls, id=None):
         if cls._instance is None:
             cls._instance = cls(id)
         return cls._instance
@@ -32,9 +32,9 @@ class SourceData:
         self._view = None
         self._like = None
         
-        self.load_source()
+        self.loadSource()
     
-    def load_source(self):
+    def loadSource(self):
         source_dir = 'config/source'
         json_file = f"{self._id}.json"
         file_path = os.path.join(source_dir, json_file)
@@ -61,6 +61,7 @@ class SourceData:
                 self._view = data['info']['view']
                 self._like = data['info']['like']
             else:
-                print({"error": f"ID [{self._id}] is not exist source file."})
+                raise Exception(f"ID [{self._id}] is not exist source file.")
         except Exception as e:
-            print({"error": f"source file read error: ID [{self._id}] {str(e)}"})
+            raise Exception(f"source file read error: {str(e)}")
+
