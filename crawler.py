@@ -2,7 +2,7 @@ import sys
 from playwright.sync_api import sync_playwright
 
 from configData import getArgv, getSource
-from custom import get_number_custom
+from custom import getStringCustom, getIntCustom
 from toJson import saveJson
 from toElasticsearch import toElasticsearch
 
@@ -209,9 +209,9 @@ class Crawler:
                     
                     content_text = content_element.replace('\n', '').replace('\t', '').replace('\r', '').replace('\v', '').replace('\f', '')
                     
-                    date_text = get_number_custom(page.locator(self.SOURCE._date['selector']).first.text_content())
-                    view_text = get_number_custom(page.locator(self.SOURCE._view['selector']).first.text_content())
-                    like_text = get_number_custom(page.locator(self.SOURCE._like['selector']).first.text_content())
+                    date_text = getStringCustom(page.locator(self.SOURCE._date['selector']).first.text_content())
+                    view_text = getIntCustom(page.locator(self.SOURCE._view['selector']).first.text_content())
+                    like_text = getIntCustom(page.locator(self.SOURCE._like['selector']).first.text_content())
 
                     crawl_data.append({
                         'subject': subject_text,
