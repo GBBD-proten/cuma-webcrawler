@@ -219,7 +219,10 @@ class Crawler:
                         'date': date_text,
                         'view': view_text,
                         'like': like_text,
-                        'url': url
+                        'url': url,
+                        'site': self.SOURCE._site,
+                        'category': self.SOURCE._category,
+                        'category_name': self.SOURCE._category_name
                     })
                     
                     if self.ARGV._test and crawl_count >= self.ARGV._test_count:
